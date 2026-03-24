@@ -1,50 +1,40 @@
-
-import java.io.IOException;
-import java.net.Socket;
-import java.net.ServerSocket;
-
+import java.io.*;
+import java.net.*;
 
 public class Server {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        int port = 3000;
 
-        System.out.println("Server inizio esecuzione");
+        // Scenario 3: Se provi ad avviare due server sulla stessa porta, 
+        // il secondo lancerà una BindException.
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Il server è In ascolto sulla porta " + port);
 
+            // Accettiamo una singola connessione (Unicast)
+            try (Socket clientSocket = serverSocket.accept()) {
+                System.out.println("Client connesso: " + clientSocket.getInetAddress());
 
+                // Stream per leggere e scrivere
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-        try {
-            ServerSocket server=new ServerSocket(3000);
-            System.out.println("Server in attesa di richieste dal client");
-            Socket s=server.accept();
-            System.out.println("Server connesso");
-        }catch (IOException e){
-            System.out.println("errore");
+                // Lettura richiesta
+                String richiesta = in.readLine();
+                System.out.println("Richiesta ricevuta: " + richiesta);
+
+                // Invio risposta
+                String risposta = richiesta.toUpperCase();
+                out.println("Risposta dal Server: " + risposta);
+
+                System.out.println("Risposta inviata. Chiusura comunicazione.");
+            }
+            // Il blocco try-with-resources chiude automaticamente il clientSocket
+
+        } catch (BindException e) {
+            System.err.println("Porta " + port + " già in uso! (Scenario 3)");
+        } catch (IOException e) {
+            System.err.println("Errore di I/O nel server: " + e.getMessage());
         }
-
-        /*int port = 3333;
-        ServerSocket serverSocket = new ServerSocket(port);
-        System.out.println("Server connesso alla porta: " + port);
-
-        while (true) {
-            Socket clientSocket = serverSocket.accept();
-            System.out.println("Client connected: " + clientSocket);
-
-            InputStream inputStream = clientSocket.getInputStream(); //LETTURA
-            OutputStream outputStream = clientSocket.getOutputStream(); //SCRITTURA
-
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
-            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-
-            String clientMessage = dataInputStream.readUTF();
-            System.out.println("Ricevuto dal Client: " + clientMessage);
-
-            String serverResponse = "Risposta dal Server: " + clientMessage.toUpperCase();
-            dataOutputStream.writeUTF(serverResponse);
-
-            inputStream.close();
-            outputStream.close();
-            clientSocket.close();
-        }
-        */
+        System.out.println("Servizio terminato.");
     }
 }
-

@@ -1,40 +1,36 @@
-import java.net.Socket;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
-
-
+import java.io.*;
+import java.net.*;
+import java.util.*;
 public class Client {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        String host = "localhost"; // Cambia in "locaost" per testare lo Scenario 4
+        int port = 3000;
 
+        System.out.println("Avvio tentativo di connessione...");
 
-        try {
-            Socket socket = new Socket("localhost", 3000);
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter pw= new PrintWriter(outputStream);
-            pw.print("Connected to server");
-            pw.flush();
+        try (Socket socket = new Socket(host, port)) {
+            System.out.println("Client Connesso al server!");
+
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // Invio richiesta
+            String messaggio = "ciao server";
+            //scanner
+            out.println(messaggio);
+            System.out.println("messaggio Inviato: " + messaggio);
+
+            // Lettura risposta
+            String risposta = in.readLine();
+            System.out.println("messaggio Ricevuto: " + risposta);
+
+        } catch (UnknownHostException e) {
+            System.err.println("Host non trovato: " + host + " (Scenario 4)");
+        } catch (ConnectException e) {
+            System.err.println("Connessione rifiutata. Il server è attivo? (Scenario 2)");
+        } catch (IOException e) {
+            System.err.println("Errore di comunicazione: " + e.getMessage());
         }
-        catch (IOException e){
-            System.out.println("Porta non disponibile");
-
-        }
-       /* InputStream inputStream = socket.getInputStream();
-
-
-        DataInputStream dataInputStream = new DataInputStream(inputStream);
-        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-
-        String clientMessage = "Ciao";
-        dataOutputStream.writeUTF(clientMessage);
-
-        String serverResponse = dataInputStream.readUTF();
-        System.out.println("Received from server: " + serverResponse);
-
-        inputStream.close();
-        outputStream.close();
-        socket.close();
-        */
+        System.out.println("Chiusura.");
     }
 }
